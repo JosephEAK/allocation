@@ -199,26 +199,24 @@ void print_tas(void)
     printf("---------------------------------------------------------------\n\n");
 }
 
-char *best_fit_(unsigned int size)
+char *best_fit(unsigned int size)
 {
     int jump;
     char *ptr = tas + libre;
-    if (*ptr >= size)
-    {
-        return ptr;
-    }
+    char *smallest_fit = NULL;
+    int curr_size = TAILLE_TAS;
+
     while (ptr < tas + TAILLE_TAS - 1)
-    { // Walks through the tas
-        // if the current block is free and has the proper size
-        if (*ptr >= size && *(ptr + 1) == FREE_BLOCK)
+    {
+        if (*ptr < curr_size && *ptr >= size && *(ptr + 1) == FREE_BLOCK)
         {
-            return ptr;
+            curr_size = *ptr;
+            smallest_fit = ptr;
         }
         jump = *ptr + 1;
         ptr = ptr + jump;
-        /*printf("moving to ptr + %d\n", jump);*/
     }
-    return NULL;
+    return smallest_fit;
 }
 
 char *first_fit_(unsigned int size)
