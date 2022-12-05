@@ -8,12 +8,11 @@ all: clean lib
 lib:
 	$(CC) -fPIC -c allocation.c
 	$(CC) -shared -o liballocation.so allocation.o -lcunit
-
+valgrind:
+	valgrind main.c test_allocation.c
 test: clean lib
 	$(CC) $(LDFLAGS) -L$(LIB_PATH) -o test_allocation $(CFLAGS) test_allocation.c -lallocation -lcunit -lm
-
 clean:
 	rm -f *.o allocation liballocation.so liballocation.a
-	
 .PHONY:
 	test
