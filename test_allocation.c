@@ -10,36 +10,38 @@
 
 void test_tas_malloc_example()
 {
-    /*char *p1 = tas_malloc(10);
-     strcpy(p1, "tp 1");
+    init_tas();
+    char *p1 = tas_malloc(10);
+    strcpy(p1, "tp 1");
 
-     CU_ASSERT(p1 - 1 == tas);
-     CU_ASSERT(*(p1 + 1) != FREE_BLOCK);
+    CU_ASSERT(p1 - 1 == tas);
+    CU_ASSERT(*(p1 + 1) != FREE_BLOCK);
 
-     CU_ASSERT(libre == 11);
-     CU_ASSERT(*(tas + libre) == 116);
-     CU_ASSERT(*(tas + libre + 1) == FREE_BLOCK);
+    CU_ASSERT(libre == 11);
+    CU_ASSERT(*(tas + libre) == 116);
+    CU_ASSERT(*(tas + libre + 1) == FREE_BLOCK);
 
-     char *p2 = tas_malloc(9);
-     strcpy(p2, "tp 2");
+    char *p2 = tas_malloc(9);
+    strcpy(p2, "tp 2");
 
-     CU_ASSERT(p2 == tas + 12);
-     CU_ASSERT(*(p2 - 1) == 9);
-     CU_ASSERT(libre == 21);
+    CU_ASSERT(p2 == tas + 12);
+    CU_ASSERT(*(p2 - 1) == 9);
+    CU_ASSERT(libre == 21);
 
-     char *p3 = tas_malloc(5);
-     strcpy(p3, "tp 3");
+    char *p3 = tas_malloc(5);
+    strcpy(p3, "tp 3");
 
-     CU_ASSERT(p3 == tas + 22);
-     CU_ASSERT(*(p3 - 1) == 5);
-     CU_ASSERT(libre == 27);
+    CU_ASSERT(p3 == tas + 22);
+    CU_ASSERT(*(p3 - 1) == 5);
+    CU_ASSERT(libre == 27);
 
-     char *p4 = tas_malloc(101);
-     CU_ASSERT(p4 == NULL);*/
+    char *p4 = tas_malloc(101);
+    CU_ASSERT(p4 == NULL);
 }
 
 void test_tas_free_several()
 {
+    init_tas();
     char *p1 = tas_malloc(10);
     char *p2 = tas_malloc(10);
     char *p3 = tas_malloc(10);
@@ -51,14 +53,12 @@ void test_tas_free_several()
     strcpy(p4, "tp4");
 
     tas_free(p2); // simple free
-    print_tas();
 
     CU_ASSERT(*(p2 - 1) == 10);
     CU_ASSERT(*(p2) == FREE_BLOCK);
     CU_ASSERT(libre == p2 - 1 - tas);
 
     tas_free(p3); // testing merge left
-    print_tas();
 
     CU_ASSERT(*(p3) == INIT_VAL);
     CU_ASSERT(*(p3 - 1) == INIT_VAL);
