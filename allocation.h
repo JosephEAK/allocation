@@ -1,6 +1,8 @@
 #ifndef FONCTION_HEADER
 #define FONCTION_HEADER
 
+#include "linked_list_function.h"
+
 #define TAILLE_TAS 128
 #define FREE_BLOCK -1
 #define INIT_VAL 0
