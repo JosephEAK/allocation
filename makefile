@@ -1,19 +1,12 @@
 CC ?= gcc
 CFLAGS += -Wall --pedantic -Werror
 DEBUG_FLAGS += -g
-LIB_PATH = .
+LOCAL_LIB=/home/konan_akoubia/test_submodule/allocation/linked_list
+LOCAL_INC=/home/konan_akoubia/test_submodule/allocation/linked_list
 
-all: clean lib
-	$(CC) $(LDFLAGS) -L$(LIB_PATH) -o allocation $(CFLAGS) $(DEBUG_FLAGS) main.c -lcunit -lallocation
-
-lib:
-	$(CC) -fPIC -c $(CFLAGS) allocation.c
-	$(CC) -shared -o liballocation.so *.o
+all:
+	$(CC) $(LDFLAGS) -I$(LOCAL_INC) -o allocation $(CFLAGS) $(DEBUG_FLAGS) allocation.c main.c -llist
 valgrind:
 	make test && valgrind --leak-check=yes ./test_allocation
-test: clean lib
-	$(CC) $(LDFLAGS) -L$(LIB_PATH) -o test_allocation $(CFLAGS) $(DEBUG_FLAGS) test_allocation.c -lallocation -lcunit
 clean:
 	rm -f *.o allocation test_allocation *.so *.a
-.PHONY:
-	test
