@@ -1,11 +1,15 @@
 CC ?= gcc
 CFLAGS += -Wall --pedantic -Werror
 DEBUG_FLAGS += -g
-LOCAL_LIB=/home/konan_akoubia/test_submodule/allocation/linked_list
-LOCAL_INC=/home/konan_akoubia/test_submodule/allocation/linked_list
+LOCAL_LIB=/home/konan_akoubia/allocation/poei-linkedlist
+LOCAL_INC=/home/konan_akoubia/allocation/poei-linkedlist
 
 all:
-	$(CC) $(LDFLAGS) -I$(LOCAL_INC) -o allocation $(CFLAGS) $(DEBUG_FLAGS) allocation.c main.c -llist
+	$(CC) $(LDFLAGS) -I$(LOCAL_INC) -L$(LOCAL_LIB) -o allocation $(CFLAGS) $(DEBUG_FLAGS) allocation.c main.c -llinkedlist
+test_d_ll_debug:
+	$(CC) $(LDFLAGS) -I$(LOCAL_INC) -L$(LOCAL_LIB) -o debug_d_ll_allocation_tests $(CFLAGS) $(DEBUG_FLAGS) tests/test_d_ll_allocation.c $(CFILES) -lcunit
+lib:
+	cd poei-linkedlist && make lib
 valgrind:
 	make test && valgrind --leak-check=yes ./test_allocation
 clean:
