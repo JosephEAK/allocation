@@ -1,8 +1,8 @@
 CC ?= gcc
 CFLAGS += -Wall --pedantic -Werror
 DEBUG_FLAGS += -g
-LOCAL_LIB=/home/konan_akoubia/allocation/poei-linkedlist
-LOCAL_INC=/home/konan_akoubia/allocation/poei-linkedlist
+LOCAL_LIB=./poei-linkedlist
+LOCAL_INC=./poei-linkedlist
 
 all:
 	$(CC) $(LDFLAGS) -I$(LOCAL_INC) -L$(LOCAL_LIB) -o allocation $(CFLAGS) $(DEBUG_FLAGS) allocation.c main.c -llinkedlist
