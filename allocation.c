@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 
 #include "allocation.h"
 
@@ -24,7 +25,7 @@ void init_heap(void)
     head_tracker = d_ll_get_new_elem(heap, SIZE_HEAP, FREE_BLOCK);
 }
 
-void free_heap()
+void free_heap(void)
 {
     free(heap);
     d_ll_free(head_tracker);
@@ -57,13 +58,23 @@ void merge_right(buffer_tracker *tmp)
 
 void defragmentation(buffer_tracker *tmp)
 {
-    if (tmp->next->filled == FREE_BLOCK)
+
+    if (tmp->next != NULL)
     {
-        merge_right(tmp);
+        if (tmp->next->filled == FREE_BLOCK)
+        {
+            printf("4\n");
+            merge_right(tmp);
+        }
     }
-    if (tmp->prev->filled == FREE_BLOCK)
+
+    if (tmp->prev != NULL)
     {
-        merge_right(tmp->prev);
+        if (tmp->prev->filled == FREE_BLOCK)
+        {
+            printf("5\n");
+            merge_right(tmp->prev);
+        }
     }
 }
 
@@ -80,6 +91,7 @@ void *allocate_memory(unsigned int size)
         if (size == tmp->size)
         {
             tmp->filled = ALLOCATED;
+
             return tmp->ptr;
         }
         else
@@ -90,6 +102,7 @@ void *allocate_memory(unsigned int size)
 
             buffer_tracker *new_free_;
             new_free_ = d_ll_get_new_elem((char *)tmp->ptr + size, left_size, FREE_BLOCK);
+
             new_free_->next = tmp->next;
             tmp->next = new_free_;
             new_free_->prev = tmp;
@@ -99,51 +112,71 @@ void *allocate_memory(unsigned int size)
             return tmp->ptr;
         }
     }
-
     return NULL;
 }
 
-/*int get_column_line_print_heap()
+void print_heap(void)
 {
-    int count = 0;
-    for (int i = 1; i <= SIZE_HEAP; ++i)
+    int i, j;
+    buffer_tracker *tmp;
+    tmp = heap;
+    int col = 20;
+    int line = SIZE_HEAP / col;
+
+    while (tmp != NULL)
     {
-        if (SIZE_HEAP % i == 0)
+        for (i = 0; i < line; i++)
         {
-            count++;
+            for (j = 0; j < col; j++)
+            {
+                printf("%4d", j + line * i);
+            }
+            printf("\n");
+            for (j = 0; j < col; j++)
+            {
+                printf("%4d", (tmp + (j + col * i))->filled);
+            }
+            printf("\n");
+            for (j = 0; j < col; j++)
+            {
+                if (tmp->filled)
+                {
+                    printf("%4c", tmp->filled);
+                }
+                else
+                {
+                    printf("    ");
+                }
+            }
+            printf("\n\n");
         }
-    }
-    int tab[count];
-
-    for (int i = 1; i <= SIZE_HEAP; ++i)
-    {
-        if (SIZE_HEAP % i == 0)
-        {
-            tab[i] = i;
-        }
-    }
-
-    return 0;
-}*/
-
-/*void print_heap(void)
-{
-    / buffer_tracker *pt;
-    pt = heap;
-    int L, C;
-
-    while (pt != NULL)
-    {
-        if (pt->filled == ALLOCATED || pt->filled == FREE_BLOCK)
-        {
-            printf("[%d]->", pt->filled);
-        }
-        else
-        {
-            printf("[%s]->", pt->filled);
-        }
-
-        pt = pt->next;
+        tmp = tmp->next;
     }
     printf("---------------------------------------------------------------\n\n");
-}*/
+}
+
+void ecrire_date_heure_adresse(void *ptr, int size)
+{
+    // Ouverture du fichier en mode écriture
+    FILE *fp = fopen("allocation.txt", "w");
+
+    if (fp == NULL)
+    {
+        printf("Impossible d'ouvrir le fichier.\n");
+        return;
+    }
+
+    // Obtention de la date et de l'heure actuelles
+    time_t t = time(NULL);
+    struct tm *tm = localtime(&t);
+    char s[64];
+    strftime(s, sizeof(s), "%c", tm);
+
+    // Écriture de la date, de l'heure, de l'adresse du pointeur et de la taille dans le fichier
+    fprintf(fp, "Date et heure actuelles: %s\n", s);
+    fprintf(fp, "Adresse du pointeur: %p\n", ptr);
+    fprintf(fp, "Taille allouée: %d octets\n", size);
+
+    // Fermeture du fichier
+    fclose(fp);
+}

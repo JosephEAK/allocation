@@ -10,11 +10,71 @@
 
 void test_noob(void)
 {
+    buffer_tracker *head_tracker;
     init_heap();
+    head_tracker = get_buffer_tracker();
+
+    CU_ASSERT(head_tracker->size == SIZE_HEAP);
+    CU_ASSERT(head_tracker->filled == FREE_BLOCK);
+    CU_ASSERT(head_tracker->next == NULL);
+    CU_ASSERT(head_tracker->prev == NULL);
+
+    free_heap();
 }
 
-void test_first_fit(void)
+void test_heap_malloc_init()
 {
+    buffer_tracker *head_tracker;
+    void *heap;
+
+    init_heap();
+
+    head_tracker = get_buffer_tracker();
+    heap = get_heap();
+
+    unsigned int ptr_size = 12;
+    char *ptr = (char *)allocate_memory(ptr_size * sizeof(char));
+    double_linked_list *track;
+
+    CU_ASSERT(ptr == heap);
+
+    track = head_tracker;
+
+    CU_ASSERT(track->ptr == ptr);
+    CU_ASSERT(track->size == ptr_size);
+
+    track = track->next;
+    CU_ASSERT(track->ptr == ptr + ptr_size);
+    CU_ASSERT(track->size == SIZE_HEAP - ptr_size);
+    CU_ASSERT(track->filled == FREE_BLOCK);
+
+    free_heap();
+}
+
+void test_add_free_several(void)
+{
+    buffer_tracker *head_tracker;
+    init_heap();
+
+    head_tracker = get_buffer_tracker();
+
+    unsigned int ptr_size1 = 12;
+    unsigned int ptr_size2 = 85;
+    /*unsigned int ptr_size3 = 33;
+    unsigned int ptr_size4 = 90;*/
+
+    char *ptr1 = (char *)allocate_memory(ptr_size1 * sizeof(char));
+    char *ptr2 = (char *)allocate_memory(ptr_size2 * sizeof(char));
+    // char *ptr3 = (char *)allocate_memory(ptr_size3 * sizeof(char));
+    // char *ptr4 = (char *)allocate_memory(ptr_size4 * sizeof(char));
+
+    CU_ASSERT(head_tracker->size == ptr_size1);
+    CU_ASSERT(head_tracker->ptr == ptr1);
+
+    CU_ASSERT(head_tracker->next->size == ptr_size2);
+    CU_ASSERT(head_tracker->next->ptr == ptr2);
+
+    free_heap();
 }
 
 int init_suite(void) { return 0; }
@@ -37,7 +97,9 @@ int main()
     }
 
     /* add the tests to the suite */
-    if (NULL == CU_add_test(pSuite, "test_noob()", test_noob))
+    if (NULL == CU_add_test(pSuite, "test_noob()", test_noob) ||
+        NULL == CU_add_test(pSuite, "test_heap_malloc_init()", test_heap_malloc_init) ||
+        NULL == CU_add_test(pSuite, "test_add_free_several()", test_add_free_several))
     {
         CU_cleanup_registry();
         return CU_get_error();
