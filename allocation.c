@@ -126,7 +126,7 @@ void *allocate_memory(unsigned int size)
     return 0;
 }*/
 
-void print_heap(void)
+/*void print_heap(void)
 {
     / buffer_tracker *pt;
     pt = heap;
@@ -146,4 +146,4 @@ void print_heap(void)
         pt = pt->next;
     }
     printf("---------------------------------------------------------------\n\n");
-}
+}*/

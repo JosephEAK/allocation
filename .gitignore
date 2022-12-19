@@ -8,3 +8,5 @@
 *.d
 debug_d_ll_allocation_tests
 allocation
+test_allocation
+
