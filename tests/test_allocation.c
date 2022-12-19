@@ -10,7 +10,15 @@
 
 void test_noob(void)
 {
+    init_heap();
+    allocate_memory(100);
+    print_heap();
+
     CU_ASSERT(0 == 0);
+}
+
+void test_first_fit(void)
+{
 }
 
 int init_suite(void) { return 0; }

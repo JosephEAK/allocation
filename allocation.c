@@ -103,6 +103,47 @@ void *allocate_memory(unsigned int size)
     return NULL;
 }
 
+/*int get_column_line_print_heap()
+{
+    int count = 0;
+    for (int i = 1; i <= SIZE_HEAP; ++i)
+    {
+        if (SIZE_HEAP % i == 0)
+        {
+            count++;
+        }
+    }
+    int tab[count];
+
+    for (int i = 1; i <= SIZE_HEAP; ++i)
+    {
+        if (SIZE_HEAP % i == 0)
+        {
+            tab[i] = i;
+        }
+    }
+
+    return 0;
+}*/
+
 void print_heap(void)
 {
+    / buffer_tracker *pt;
+    pt = heap;
+    int L, C;
+
+    while (pt != NULL)
+    {
+        if (pt->filled == ALLOCATED || pt->filled == FREE_BLOCK)
+        {
+            printf("[%d]->", pt->filled);
+        }
+        else
+        {
+            printf("[%s]->", pt->filled);
+        }
+
+        pt = pt->next;
+    }
+    printf("---------------------------------------------------------------\n\n");
 }

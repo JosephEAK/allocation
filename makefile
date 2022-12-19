@@ -6,8 +6,8 @@ LOCAL_INC=/home/konan_akoubia/allocation/poei-linkedlist
 
 all:
 	$(CC) $(LDFLAGS) -I$(LOCAL_INC) -L$(LOCAL_LIB) -o allocation $(CFLAGS) $(DEBUG_FLAGS) allocation.c main.c -llinkedlist
-test_d_ll_debug:
-	$(CC) $(LDFLAGS) -I$(LOCAL_INC) -L$(LOCAL_LIB) -o debug_d_ll_allocation_tests $(CFLAGS) $(DEBUG_FLAGS) tests/test_d_ll_allocation.c $(CFILES) -lcunit
+test:
+	$(CC) $(LDFLAGS) -I$(LOCAL_INC) -L$(LOCAL_LIB) -o test_allocation $(CFLAGS) $(DEBUG_FLAGS) tests/test_allocation.c $(CFILES) -lcunit
 lib:
 	cd poei-linkedlist && make lib
 valgrind:
