@@ -38,7 +38,7 @@ buffer_tracker *first_fit(unsigned int size)
 
     while (tmp != NULL)
     {
-        if (tmp->filled == FREE_BLOCK && tmp->size >= SIZE_HEAP)
+        if (tmp->filled == FREE_BLOCK && tmp->size >= size)
         {
             return tmp;
         }
@@ -143,6 +143,20 @@ void print_heap(void)
         printf("\n\n");
     }
     printf("---------------------------------------------------------------\n\n");
+}
+
+void print_head_tracker(void)
+{
+
+    double_linked_list *tmp;
+    tmp = head_tracker;
+    while (tmp != NULL)
+    {
+        printf("%ld %d -> ", (char *)tmp->ptr - (char *)heap, tmp->size);
+
+        tmp = tmp->next;
+    }
+    printf("\n");
 }
 
 void ecrire_date_heure_adresse(void *ptr, int size)

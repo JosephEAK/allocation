@@ -19,6 +19,7 @@ buffer_tracker *get_buffer_tracker();
 void *get_heap();
 void free_heap(void);
 void ecrire_date_heure_adresse(void *ptr, int size);
+void print_head_tracker(void);
 
 buffer_tracker *first_fit(unsigned int size);
 

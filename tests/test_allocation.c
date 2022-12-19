@@ -51,7 +51,7 @@ void test_heap_malloc_init()
     free_heap();
 }
 
-void test_add_free_several(void)
+void test_add_several(void)
 {
     buffer_tracker *head_tracker;
     init_heap();
@@ -60,18 +60,9 @@ void test_add_free_several(void)
 
     unsigned int ptr_size1 = 12;
     unsigned int ptr_size2 = 85;
-    /*unsigned int ptr_size3 = 33;
-    unsigned int ptr_size4 = 90;*/
 
     char *ptr1 = (char *)allocate_memory(ptr_size1 * sizeof(char));
     char *ptr2 = (char *)allocate_memory(ptr_size2 * sizeof(char));
-    // char *ptr3 = (char *)allocate_memory(ptr_size3 * sizeof(char));
-    // char *ptr4 = (char *)allocate_memory(ptr_size4 * sizeof(char));
-
-    strcpy(ptr1, "hello");
-    // strcpy(ptr2, "love");
-
-    // print_heap();
 
     CU_ASSERT(head_tracker->size == ptr_size1);
     CU_ASSERT(head_tracker->ptr == ptr1);
@@ -80,6 +71,12 @@ void test_add_free_several(void)
     CU_ASSERT(head_tracker->next->ptr == ptr2);
 
     free_heap();
+}
+
+void test_free_several(void)
+{
+    buffer_tracker *head_tracker;
+    init_heap();
 }
 
 int init_suite(void) { return 0; }
@@ -104,7 +101,8 @@ int main()
     /* add the tests to the suite */
     if (NULL == CU_add_test(pSuite, "test_noob()", test_noob) ||
         NULL == CU_add_test(pSuite, "test_heap_malloc_init()", test_heap_malloc_init) ||
-        NULL == CU_add_test(pSuite, "test_add_free_several()", test_add_free_several))
+        NULL == CU_add_test(pSuite, "test_add_several()", test_add_several) ||
+        NULL == CU_add_test(pSuite, "test_free_several()", test_free_several))
     {
         CU_cleanup_registry();
         return CU_get_error();
