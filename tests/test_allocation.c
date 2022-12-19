@@ -68,6 +68,11 @@ void test_add_free_several(void)
     // char *ptr3 = (char *)allocate_memory(ptr_size3 * sizeof(char));
     // char *ptr4 = (char *)allocate_memory(ptr_size4 * sizeof(char));
 
+    strcpy(ptr1, "hello");
+    // strcpy(ptr2, "love");
+
+    // print_heap();
+
     CU_ASSERT(head_tracker->size == ptr_size1);
     CU_ASSERT(head_tracker->ptr == ptr1);
 

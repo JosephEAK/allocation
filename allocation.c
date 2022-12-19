@@ -103,9 +103,7 @@ void *allocate_memory(unsigned int size)
             buffer_tracker *new_free_;
             new_free_ = d_ll_get_new_elem((char *)tmp->ptr + size, left_size, FREE_BLOCK);
 
-            new_free_->next = tmp->next;
-            tmp->next = new_free_;
-            new_free_->prev = tmp;
+            d_ll_add_after(tmp, new_free_);
 
             defragmentation(new_free_);
 
@@ -117,40 +115,32 @@ void *allocate_memory(unsigned int size)
 
 void print_heap(void)
 {
-    int i, j;
+    int i, j, col = 15, line = 20;
     buffer_tracker *tmp;
     tmp = heap;
-    int col = 20;
-    int line = SIZE_HEAP / col;
 
-    while (tmp != NULL)
+    for (i = 0; i < col; i++)
     {
-        for (i = 0; i < line; i++)
+        for (j = 0; j < line; j++)
         {
-            for (j = 0; j < col; j++)
+            printf("%4d", j + col * i);
+        }
+        printf("\n");
+        for (j = 0; j < line; j++)
+        {
+            while (tmp != NULL)
             {
-                printf("%4d", j + line * i);
-            }
-            printf("\n");
-            for (j = 0; j < col; j++)
-            {
-                printf("%4d", (tmp + (j + col * i))->filled);
-            }
-            printf("\n");
-            for (j = 0; j < col; j++)
-            {
-                if (tmp->filled)
+                if (isprint(tmp->filled))
                 {
+                    printf("ouf");
                     printf("%4c", tmp->filled);
                 }
                 else
-                {
-                    printf("    ");
-                }
+                    printf("   y");
+                tmp = tmp->next;
             }
-            printf("\n\n");
         }
-        tmp = tmp->next;
+        printf("\n\n");
     }
     printf("---------------------------------------------------------------\n\n");
 }
