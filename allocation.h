@@ -20,6 +20,7 @@ void *get_heap();
 void free_heap(void);
 void ecrire_date_heure_adresse(void *ptr, int size);
 void print_head_tracker(void);
+void free_memory(char *ptr);
 
 buffer_tracker *first_fit(unsigned int size);
 

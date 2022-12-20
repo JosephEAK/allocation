@@ -63,7 +63,6 @@ void defragmentation(buffer_tracker *tmp)
     {
         if (tmp->next->filled == FREE_BLOCK)
         {
-            printf("4\n");
             merge_right(tmp);
         }
     }
@@ -72,7 +71,6 @@ void defragmentation(buffer_tracker *tmp)
     {
         if (tmp->prev->filled == FREE_BLOCK)
         {
-            printf("5\n");
             merge_right(tmp->prev);
         }
     }
@@ -115,34 +113,18 @@ void *allocate_memory(unsigned int size)
 
 void print_heap(void)
 {
-    int i, j, col = 15, line = 20;
+    /*int i, j, col = 15, line = 20;
     buffer_tracker *tmp;
     tmp = heap;
 
-    for (i = 0; i < col; i++)
+    while (tmp != NULL)
     {
-        for (j = 0; j < line; j++)
-        {
-            printf("%4d", j + col * i);
-        }
-        printf("\n");
-        for (j = 0; j < line; j++)
-        {
-            while (tmp != NULL)
-            {
-                if (isprint(tmp->filled))
-                {
-                    printf("ouf");
-                    printf("%4c", tmp->filled);
-                }
-                else
-                    printf("   y");
-                tmp = tmp->next;
-            }
-        }
-        printf("\n\n");
+        printf("%d");
+
+        tmp = tmp->next;
     }
-    printf("---------------------------------------------------------------\n\n");
+
+    printf("---------------------------------------------------------------\n\n");*/
 }
 
 void print_head_tracker(void)
@@ -183,4 +165,20 @@ void ecrire_date_heure_adresse(void *ptr, int size)
 
     // Fermeture du fichier
     fclose(fp);
+}
+
+void free_memory(char *ptr)
+{
+    double_linked_list *tmp;
+    tmp = head_tracker;
+    while (tmp != NULL)
+    {
+        if (tmp->ptr == ptr)
+        {
+            tmp->filled = FREE_BLOCK;
+            defragmentation(tmp);
+        }
+
+        tmp = tmp->next;
+    }
 }

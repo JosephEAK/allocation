@@ -70,6 +70,29 @@ void test_add_several(void)
     CU_ASSERT(head_tracker->next->size == ptr_size2);
     CU_ASSERT(head_tracker->next->ptr == ptr2);
 
+    // print_heap();
+
+    free_heap();
+}
+
+void test_free(void)
+{
+    buffer_tracker *head_tracker;
+    init_heap();
+
+    head_tracker = get_buffer_tracker();
+
+    unsigned int ptr_size1 = 12;
+
+    char *ptr1 = (char *)allocate_memory(ptr_size1 * sizeof(char));
+
+    free_memory(ptr1);
+
+    CU_ASSERT(head_tracker->size == SIZE_HEAP);
+    CU_ASSERT(head_tracker->filled == FREE_BLOCK);
+    CU_ASSERT(head_tracker->next == NULL);
+    CU_ASSERT(head_tracker->prev == NULL);
+
     free_heap();
 }
 
@@ -77,6 +100,34 @@ void test_free_several(void)
 {
     buffer_tracker *head_tracker;
     init_heap();
+
+    head_tracker = get_buffer_tracker();
+
+    unsigned int ptr_size1 = 9;
+    unsigned int ptr_size2 = 11;
+    unsigned int ptr_size3 = 44;
+    unsigned int ptr_size4 = 16;
+
+    char *ptr1 = (char *)allocate_memory(ptr_size1 * sizeof(char));
+    char *ptr2 = (char *)allocate_memory(ptr_size2 * sizeof(char));
+    char *ptr3 = (char *)allocate_memory(ptr_size3 * sizeof(char));
+    char *ptr4 = (char *)allocate_memory(ptr_size4 * sizeof(char));
+
+    print_head_tracker();
+
+    free_memory(ptr4);
+    print_head_tracker();
+
+    free_memory(ptr2);
+    print_head_tracker();
+
+    CU_ASSERT(head_tracker->next->filled == FREE_BLOCK);
+    CU_ASSERT(head_tracker->next->size == ptr_size3);
+
+    ptr3 = ptr3;
+    ptr1 = ptr1;
+
+    free_heap();
 }
 
 int init_suite(void) { return 0; }
@@ -102,6 +153,7 @@ int main()
     if (NULL == CU_add_test(pSuite, "test_noob()", test_noob) ||
         NULL == CU_add_test(pSuite, "test_heap_malloc_init()", test_heap_malloc_init) ||
         NULL == CU_add_test(pSuite, "test_add_several()", test_add_several) ||
+        NULL == CU_add_test(pSuite, "test_free()", test_free) ||
         NULL == CU_add_test(pSuite, "test_free_several()", test_free_several))
     {
         CU_cleanup_registry();
