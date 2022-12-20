@@ -2,246 +2,182 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 
 #include "allocation.h"
 
-void init_tas(void)
+void *heap;
+buffer_tracker *head_tracker;
+
+void *get_heap()
 {
-    int i;
-
-    for (i = 0; i < TAILLE_TAS; i++)
-    { // Might be test only at some point
-        tas[i] = INIT_VAL;
-    }
-
-    tas[0] = TAILLE_TAS - 1;
-    tas[1] = FREE_BLOCK;
-    libre = 0;
-    count = 0;
+    return heap;
 }
 
-char *tas_malloc(unsigned int taille)
+buffer_tracker *get_buffer_tracker()
 {
-    char *pt;
-    char prev_libre;
+    return head_tracker;
+}
 
-    if (tas[libre] - 1 >= taille)
+void init_heap(void)
+{
+    heap = malloc(SIZE_HEAP);
+    head_tracker = d_ll_get_new_elem(heap, SIZE_HEAP, FREE_BLOCK);
+}
+
+void free_heap(void)
+{
+    free(heap);
+    d_ll_free(head_tracker);
+}
+
+buffer_tracker *first_fit(unsigned int size)
+{
+    buffer_tracker *tmp;
+    tmp = head_tracker;
+
+    while (tmp != NULL)
     {
-        printf("Memory allocated.\n");
-
-        pt = tas + libre + 1;
-        prev_libre = tas[libre];
-        *(pt - 1) = taille;
-        libre = taille + libre + 1;
-        tas[libre] = prev_libre - taille + FREE_BLOCK;
-        tas[libre + 1] = FREE_BLOCK;
-        return pt;
+        if (tmp->filled == FREE_BLOCK && tmp->size >= size)
+        {
+            return tmp;
+        }
+        tmp = tmp->next;
     }
-    else
+    return NULL;
+}
+
+void merge_right(buffer_tracker *tmp)
+{
+    buffer_tracker *tmp_next;
+    tmp_next = tmp->next;
+    tmp->size += tmp->next->size;
+    tmp->next = tmp->next->next;
+    free(tmp_next);
+}
+
+void defragmentation(buffer_tracker *tmp)
+{
+
+    if (tmp->next != NULL)
     {
-        printf("Memory Not allocated.\n");
+        if (tmp->next->filled == FREE_BLOCK)
+        {
+            merge_right(tmp);
+        }
+    }
+
+    if (tmp->prev != NULL)
+    {
+        if (tmp->prev->filled == FREE_BLOCK)
+        {
+            merge_right(tmp->prev);
+        }
+    }
+}
+
+void *allocate_memory(unsigned int size)
+{
+    if (!size)
         return NULL;
-    }
-}
 
-int get_index_on_tas(char *ptr)
-{
-    return ptr - tas;
-}
+    buffer_tracker *tmp;
+    tmp = first_fit(size);
 
-char get_block_size(char *ptr)
-{
-    return *(ptr - 1);
-}
-
-char *first_fit(unsigned int size)
-{
-
-    int jump;
-    char *ptr = tas + libre;
-    if (*ptr >= size)
+    if (tmp)
     {
-        return ptr;
-    }
-    while (ptr < tas + TAILLE_TAS - 1)
-    { // Walks through the tas
-        // if the current block is free and has the proper size
-        if (*ptr >= size && *(ptr + 1) == FREE_BLOCK)
+        if (size == tmp->size)
         {
-            return ptr;
+            tmp->filled = ALLOCATED;
+
+            return tmp->ptr;
         }
-        jump = *ptr + 1;
-        ptr = ptr + jump;
-        /*printf("moving to ptr + %d\n", jump);*/
+        else
+        {
+            unsigned int left_size = tmp->size - size;
+            tmp->size = size;
+            tmp->filled = ALLOCATED;
+
+            buffer_tracker *new_free_;
+            new_free_ = d_ll_get_new_elem((char *)tmp->ptr + size, left_size, FREE_BLOCK);
+
+            d_ll_add_after(tmp, new_free_);
+
+            defragmentation(new_free_);
+
+            return tmp->ptr;
+        }
     }
     return NULL;
 }
 
-int find_new_libre(char *ptr)
+void print_heap(void)
 {
-    int jump;
+    /*int i, j, col = 15, line = 20;
+    buffer_tracker *tmp;
+    tmp = heap;
 
-    while (ptr < tas + TAILLE_TAS - 1)
-    { // Walks through the tas
-        if (*(ptr + 1) == FREE_BLOCK)
-        { // if found a free block return its index
-            return get_index_on_tas(ptr);
-        }
-        jump = *ptr + 1;
-        ptr = ptr + jump;
-    }
-    return MEMORY_FULL;
-}
-
-void merge_free_blocks(char *block_left, char *block_right)
-{
-    char block_l_size = *block_left;
-    char block_r_size = *block_right;
-
-    *block_right = INIT_VAL;
-    *(block_right + 1) = INIT_VAL;
-
-    *block_left = block_l_size + block_r_size + 1;
-}
-
-void right_merge_free_blocks(char *ptr)
-{
-    char size_block = get_block_size(ptr);
-    char *next_block;
-    char val_next_block;
-
-    next_block = ptr + size_block;
-    val_next_block = *(next_block + 1);
-
-    if (val_next_block == FREE_BLOCK)
-    { // it means we have to merge the blocks
-        merge_free_blocks(ptr - 1, next_block);
-    }
-}
-
-void left_merge_free_blocks(char *ptr)
-{
-    int index_ptr;
-    char *ptr_left;
-    char size_left_free_block;
-
-    ptr_left = ptr - 1;
-    while (*ptr_left != FREE_BLOCK && ptr_left > tas)
-    { // rewind to the first FREE_BLOCK
-        ptr_left--;
-    }
-
-    if (ptr_left > tas)
+    while (tmp != NULL)
     {
-        size_left_free_block = *(ptr_left - 1);
-        if (ptr_left + size_left_free_block + 1 == ptr)
-        {
-            // We shall merge the blocks, the first free block on the left is glued to this one
-            merge_free_blocks(ptr_left - 1, ptr - 1);
-            // Let's update libre with the new block
-            index_ptr = get_index_on_tas(ptr_left - 1);
-            if (index_ptr < libre)
-            {
-                libre = index_ptr;
-            }
-        }
+        printf("%d");
+
+        tmp = tmp->next;
     }
+
+    printf("---------------------------------------------------------------\n\n");*/
 }
 
-void tas_free(char *ptr)
+void print_head_tracker(void)
 {
-    int index_ptr;
 
-    *(ptr) = FREE_BLOCK;
-
-    right_merge_free_blocks(ptr);
-
-    index_ptr = get_index_on_tas(ptr - 1);
-    if (index_ptr < libre)
+    double_linked_list *tmp;
+    tmp = head_tracker;
+    while (tmp != NULL)
     {
-        libre = index_ptr;
-        /*printf("updating libre, libre = %d\n", libre);*/
-    }
+        printf("%ld %d %c -> ", (char *)tmp->ptr - (char *)heap, tmp->size, tmp->filled);
 
-    // Now we need to look left to see if a block might be merged
-    left_merge_free_blocks(ptr);
+        tmp = tmp->next;
+    }
+    printf("\n");
 }
 
-void print_tas(void)
+void ecrire_date_heure_adresse(void *ptr, int size)
 {
-    printf("libre = %d\n", libre);
-    int i, j;
-    for (i = 0; i < 8; i++)
+    // Ouverture du fichier en mode écriture
+    FILE *fp = fopen("allocation.txt", "w");
+
+    if (fp == NULL)
     {
-        for (j = 0; j < 16; j++)
-        {
-            printf("%4d", j + 16 * i);
-        }
-        printf("\n");
-        for (j = 0; j < 16; j++)
-        {
-            printf("%4d", tas[j + 16 * i]);
-        }
-        printf("\n");
-        for (j = 0; j < 16; j++)
-        {
-            if (isprint(tas[j + 16 * i]))
-            {
-                printf("%4c", tas[j + 16 * i]);
-            }
-            else
-            {
-                printf("    ");
-            }
-        }
-        printf("\n\n");
+        printf("Impossible d'ouvrir le fichier.\n");
+        return;
     }
-    printf("---------------------------------------------------------------\n\n");
+
+    // Obtention de la date et de l'heure actuelles
+    time_t t = time(NULL);
+    struct tm *tm = localtime(&t);
+    char s[64];
+    strftime(s, sizeof(s), "%c", tm);
+
+    // Écriture de la date, de l'heure, de l'adresse du pointeur et de la taille dans le fichier
+    fprintf(fp, "Date et heure actuelles: %s\n", s);
+    fprintf(fp, "Adresse du pointeur: %p\n", ptr);
+    fprintf(fp, "Taille allouée: %d octets\n", size);
+
+    // Fermeture du fichier
+    fclose(fp);
 }
 
-char *best_fit(unsigned int size)
+void free_memory(char *ptr)
 {
-    int jump;
-    char *ptr = tas + libre;
-    char *smallest_fit = NULL;
-    int curr_size = TAILLE_TAS;
-
-    while (ptr < tas + TAILLE_TAS - 1)
+    double_linked_list *tmp;
+    tmp = head_tracker;
+    while (tmp != NULL)
     {
-        if (*ptr < curr_size && *ptr >= size && *(ptr + 1) == FREE_BLOCK)
+        if (tmp->ptr == ptr)
         {
-            curr_size = *ptr;
-            smallest_fit = ptr;
+            tmp->filled = FREE_BLOCK;
+            defragmentation(tmp);
         }
-        jump = *ptr + 1;
-        ptr = ptr + jump;
+        tmp = tmp->next;
     }
-    return smallest_fit;
-}
-
-char *first_fit_(unsigned int size)
-{
-    int jump;
-    char *ptr = tas + libre;
-    if (*ptr >= size)
-    {
-        return ptr;
-    }
-    while (ptr < tas + TAILLE_TAS - 1)
-    { // Walks through the tas
-        // if the current block is free and has the proper size
-        if (*ptr >= size && *(ptr + 1) == FREE_BLOCK)
-        {
-            return ptr;
-        }
-        jump = *ptr + 1;
-        ptr = ptr + jump;
-        /*printf("moving to ptr + %d\n", jump);*/
-    }
-    return NULL;
-}
-
-void set_strategy(char *(*strat)(unsigned int size))
-{
-    strategy = strat;
 }
