@@ -5,10 +5,10 @@
 
 #define SIZE 128
 #define SIZE_HEAP 300
-#define FREE_BLOCK -1
+#define FREE_BLOCK 'f'
 #define INIT_VAL 0
 #define MEMORY_FULL -1
-#define ALLOCATED 1
+#define ALLOCATED 'a'
 
 typedef double_linked_list buffer_tracker;
 

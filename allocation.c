@@ -134,7 +134,7 @@ void print_head_tracker(void)
     tmp = head_tracker;
     while (tmp != NULL)
     {
-        printf("%ld %d -> ", (char *)tmp->ptr - (char *)heap, tmp->size);
+        printf("%ld %d %c -> ", (char *)tmp->ptr - (char *)heap, tmp->size, tmp->filled);
 
         tmp = tmp->next;
     }
@@ -178,7 +178,6 @@ void free_memory(char *ptr)
             tmp->filled = FREE_BLOCK;
             defragmentation(tmp);
         }
-
         tmp = tmp->next;
     }
 }

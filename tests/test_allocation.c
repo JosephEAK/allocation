@@ -8,16 +8,40 @@
 
 #include "../allocation.h"
 
+#define ISNULL 0
+#define ISNOTNULL 1
+
+void tracker_values(buffer_tracker *head_tracker, int size, char filled, void *ptr, char NULL_next, char NULL_prev)
+{
+    CU_ASSERT(head_tracker->size == size);
+    CU_ASSERT(head_tracker->filled == filled);
+
+    if (ISNULL == NULL_next)
+    {
+        CU_ASSERT(head_tracker->next == NULL);
+    }
+    else
+    {
+        CU_ASSERT(head_tracker->next != NULL);
+    }
+
+    if (ISNULL == NULL_prev)
+    {
+        CU_ASSERT(head_tracker->prev == NULL);
+    }
+    else
+    {
+        CU_ASSERT(head_tracker->prev != NULL);
+    }
+}
+
 void test_noob(void)
 {
     buffer_tracker *head_tracker;
     init_heap();
     head_tracker = get_buffer_tracker();
 
-    CU_ASSERT(head_tracker->size == SIZE_HEAP);
-    CU_ASSERT(head_tracker->filled == FREE_BLOCK);
-    CU_ASSERT(head_tracker->next == NULL);
-    CU_ASSERT(head_tracker->prev == NULL);
+    tracker_values(head_tracker, SIZE_HEAP, FREE_BLOCK, get_heap(), ISNULL, ISNULL);
 
     free_heap();
 }
@@ -64,13 +88,12 @@ void test_add_several(void)
     char *ptr1 = (char *)allocate_memory(ptr_size1 * sizeof(char));
     char *ptr2 = (char *)allocate_memory(ptr_size2 * sizeof(char));
 
-    CU_ASSERT(head_tracker->size == ptr_size1);
-    CU_ASSERT(head_tracker->ptr == ptr1);
+    strcpy(ptr1, "hello");
+    strcpy(ptr2, "hello");
 
-    CU_ASSERT(head_tracker->next->size == ptr_size2);
-    CU_ASSERT(head_tracker->next->ptr == ptr2);
-
-    // print_heap();
+    tracker_values(head_tracker, ptr_size1, ALLOCATED, get_heap(), ISNOTNULL, ISNULL);
+    head_tracker = head_tracker->next;
+    tracker_values(head_tracker, ptr_size2, ALLOCATED, get_heap(), ISNOTNULL, ISNOTNULL);
 
     free_heap();
 }
@@ -85,20 +108,118 @@ void test_free(void)
     unsigned int ptr_size1 = 12;
 
     char *ptr1 = (char *)allocate_memory(ptr_size1 * sizeof(char));
+    strcpy(ptr1, "hello");
 
     free_memory(ptr1);
 
-    CU_ASSERT(head_tracker->size == SIZE_HEAP);
-    CU_ASSERT(head_tracker->filled == FREE_BLOCK);
-    CU_ASSERT(head_tracker->next == NULL);
-    CU_ASSERT(head_tracker->prev == NULL);
+    tracker_values(head_tracker, SIZE_HEAP, FREE_BLOCK, get_heap(), ISNULL, ISNULL);
 
     free_heap();
 }
 
-void test_free_several(void)
+void test_free_last_one(void)
 {
     buffer_tracker *head_tracker;
+    void *heap;
+
+    init_heap();
+
+    head_tracker = get_buffer_tracker();
+    heap = get_heap();
+
+    unsigned int ptr_size1 = 9;
+    unsigned int ptr_size2 = 11;
+    unsigned int ptr_size3 = 44;
+    unsigned int ptr_size4 = 16;
+
+    char *ptr1 = (char *)allocate_memory(ptr_size1 * sizeof(char));
+    char *ptr2 = (char *)allocate_memory(ptr_size2 * sizeof(char));
+    char *ptr3 = (char *)allocate_memory(ptr_size3 * sizeof(char));
+    char *ptr4 = (char *)allocate_memory(ptr_size4 * sizeof(char));
+
+    strcpy(ptr1, "hello");
+    strcpy(ptr2, "hello");
+    strcpy(ptr3, "hello");
+    strcpy(ptr4, "hello");
+
+    free_memory(ptr4);
+
+    tracker_values(head_tracker, ptr_size1, ALLOCATED, get_heap(), ISNOTNULL, ISNULL);
+
+    head_tracker = head_tracker->next;
+
+    tracker_values(head_tracker, ptr_size2, ALLOCATED, get_heap(), ISNOTNULL, ISNOTNULL);
+
+    head_tracker = head_tracker->next;
+
+    tracker_values(head_tracker, ptr_size3, ALLOCATED, get_heap(), ISNOTNULL, ISNOTNULL);
+
+    head_tracker = head_tracker->next;
+
+    tracker_values(head_tracker,
+                   SIZE_HEAP - ptr_size1 - ptr_size2 - ptr_size3,
+                   FREE_BLOCK,
+                   (char *)heap + ptr_size1 + ptr_size2 + ptr_size3,
+                   ISNULL,
+                   ISNOTNULL);
+
+    free_heap();
+}
+
+void test_free_middle(void)
+{
+    buffer_tracker *head_tracker;
+    // void *heap;
+
+    init_heap();
+
+    head_tracker = get_buffer_tracker();
+    // heap = get_heap();
+
+    unsigned int ptr_size1 = 9;
+    unsigned int ptr_size2 = 11;
+    unsigned int ptr_size3 = 44;
+    unsigned int ptr_size4 = 16;
+
+    char *ptr1 = (char *)allocate_memory(ptr_size1 * sizeof(char));
+    char *ptr2 = (char *)allocate_memory(ptr_size2 * sizeof(char));
+    char *ptr3 = (char *)allocate_memory(ptr_size3 * sizeof(char));
+    char *ptr4 = (char *)allocate_memory(ptr_size4 * sizeof(char));
+
+    strcpy(ptr1, "hello");
+    strcpy(ptr2, "hello");
+    strcpy(ptr3, "hello");
+    strcpy(ptr4, "hello");
+
+    free_memory(ptr2);
+    print_head_tracker();
+
+    tracker_values(head_tracker, 9, ALLOCATED, get_heap(), ISNOTNULL, ISNULL);
+
+    head_tracker = head_tracker->next;
+
+    tracker_values(head_tracker, 9, FREE_BLOCK, get_heap(), ISNOTNULL, ISNOTNULL);
+
+    free_memory(ptr3);
+    head_tracker = get_buffer_tracker();
+    head_tracker = head_tracker->next;
+
+    tracker_values(head_tracker,
+                   ptr_size3 + ptr_size2,
+                   FREE_BLOCK,
+                   get_heap(),
+                   ISNOTNULL,
+                   ISNOTNULL);
+
+    print_head_tracker();
+
+    free_heap();
+}
+
+void test_free_left(void)
+{
+    buffer_tracker *head_tracker;
+
     init_heap();
 
     head_tracker = get_buffer_tracker();
@@ -113,19 +234,17 @@ void test_free_several(void)
     char *ptr3 = (char *)allocate_memory(ptr_size3 * sizeof(char));
     char *ptr4 = (char *)allocate_memory(ptr_size4 * sizeof(char));
 
-    print_head_tracker();
-
-    free_memory(ptr4);
-    print_head_tracker();
+    strcpy(ptr1, "hello");
+    strcpy(ptr2, "hello");
+    strcpy(ptr3, "hello");
+    strcpy(ptr4, "hello");
 
     free_memory(ptr2);
     print_head_tracker();
 
-    CU_ASSERT(head_tracker->next->filled == FREE_BLOCK);
-    CU_ASSERT(head_tracker->next->size == ptr_size3);
+    tracker_values(head_tracker, 9, ALLOCATED, get_heap(), ISNOTNULL, ISNULL);
 
-    ptr3 = ptr3;
-    ptr1 = ptr1;
+    print_head_tracker();
 
     free_heap();
 }
@@ -154,7 +273,9 @@ int main()
         NULL == CU_add_test(pSuite, "test_heap_malloc_init()", test_heap_malloc_init) ||
         NULL == CU_add_test(pSuite, "test_add_several()", test_add_several) ||
         NULL == CU_add_test(pSuite, "test_free()", test_free) ||
-        NULL == CU_add_test(pSuite, "test_free_several()", test_free_several))
+        NULL == CU_add_test(pSuite, "test_free_last_one()", test_free_last_one) ||
+        NULL == CU_add_test(pSuite, "test_free_middle()", test_free_middle) ||
+        NULL == CU_add_test(pSuite, "test_free_left()", test_free_left))
     {
         CU_cleanup_registry();
         return CU_get_error();
